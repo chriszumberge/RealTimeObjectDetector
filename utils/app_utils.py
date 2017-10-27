@@ -48,6 +48,9 @@ class WebcamVideoStream:
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         (self.grabbed, self.frame) = self.stream.read()
 
+        if not self.grabbed:
+            print ('[INFO] no frame grabbed')
+
         # initialize the varibale used to indicate if the thread should
         # be stopped
         self.stopped = False
@@ -66,6 +69,9 @@ class WebcamVideoStream:
 
             # otherwise, read the next frame from the stream
             (self.grabbed, self.frame) = self.stream.read()
+
+            if not self.grabbed:
+                print ('[INFO] no frame grabbed')
 
     def read(self):
         # return the frame most recently read
