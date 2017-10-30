@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d5127837-937e-4f52-944e-7f04c98cc6aa}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>RealTimeObjectDetectionApp.py</StartupFile>
+    <StartupFile>object_detection_app.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -198,7 +198,13 @@
     <Compile Include="object_detection\utils\visualization_utils_test.py" />
     <Compile Include="object_detection\utils\__init__.py" />
     <Compile Include="object_detection\__init__.py" />
+    <Compile Include="object_detection_app.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RealTimeObjectDetectionApp.py" />
+    <Compile Include="testCamera.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\app_utils.py" />
     <Compile Include="utils\__init__.py" />
     <Compile Include="__init__.py" />

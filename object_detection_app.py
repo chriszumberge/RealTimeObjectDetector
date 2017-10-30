@@ -5,34 +5,21 @@ import argparse
 import multiprocessing
 import numpy as np
 import tensorflow as tf
-#import six.moves.urllib as urllib
-import sys
-import tarfile
-import zipfile
 
-from imutils import paths
+from utils.app_utils import FPS, WebcamVideoStream
 from multiprocessing import Queue, Pool
-
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-from utils.app_utils import FPS, WebcamVideoStream
-
 CWD_PATH = os.getcwd()
 
+# Path to frozen detection graph. This is the actual model that is used for the object detection.
 MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
-MODEL_FILE = MODEL_NAME + '.tar.gz'
-DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
+PATH_TO_CKPT = os.path.join(CWD_PATH, 'object_detection', MODEL_NAME, 'frozen_inference_graph.pb')
 
-# Path to frozen detection graph
-# This is the actual model that is used for the object detection
-PATH_TO_CKPT = os.path.join(CWD_PATH, 'object_detection', MODEL_NAME,
-                            'frozen_inference_graph.pb')
-
-# List of the strings that are used to add correct label foe each box
+# List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = os.path.join(CWD_PATH, 'object_detection', 'data', 'mscoco_label_map.pbtxt')
 
-# TensorFlow object detection model uses 90 classes
 NUM_CLASSES = 90
 
 # Loading label map
@@ -47,21 +34,21 @@ def detect_objects(image_np, sess, detection_graph):
     image_np_expanded = np.expand_dims(image_np, axis=0)
     image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
 
-    # Each box represents a part of the image where a particular object was detected
+    # Each box represents a part of the image where a particular object was detected.
     boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
 
-    # Each score represents the level of confidence fore each of the objects.
+    # Each score represent how level of confidence for each of the objects.
     # Score is shown on the result image, together with the class label.
     scores = detection_graph.get_tensor_by_name('detection_scores:0')
     classes = detection_graph.get_tensor_by_name('detection_classes:0')
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-    # Actual detection
-    (boxes, scores, classes, num_Detections) = sess.run(
+    # Actual detection.
+    (boxes, scores, classes, num_detections) = sess.run(
         [boxes, scores, classes, num_detections],
         feed_dict={image_tensor: image_np_expanded})
 
-    # Visualization of the results of a detection
+    # Visualization of the results of a detection.
     vis_util.visualize_boxes_and_labels_on_image_array(
         image_np,
         np.squeeze(boxes),
@@ -72,8 +59,9 @@ def detect_objects(image_np, sess, detection_graph):
         line_thickness=8)
     return image_np
 
+
 def worker(input_q, output_q):
-    # Load a (frozen) TensorFlow model into memory
+    # Load a (frozen) Tensorflow model into memory.
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()
@@ -85,19 +73,11 @@ def worker(input_q, output_q):
         sess = tf.Session(graph=detection_graph)
 
     fps = FPS().start()
-
     while True:
         fps.update()
-
         frame = input_q.get()
-
-        if frame != None:
-            print ('[info] frame gotten')
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            output_q.put(detect_objects(frame_rgb, sess, detection_graph))
-            print ('[info] frame processed')
-        else:
-            print ('[info] no frame')
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        output_q.put(detect_objects(frame_rgb, sess, detection_graph))
 
     fps.stop()
     sess.close()
@@ -124,17 +104,12 @@ if __name__ == '__main__':
     output_q = Queue(maxsize=args.queue_size)
     pool = Pool(args.num_workers, worker, (input_q, output_q))
 
-    print ('[INFO] beginning video capture')
-
     video_capture = WebcamVideoStream(src=args.video_source,
-                                        width=args.width,
-                                        height=args.height).start()
-
-    print (video_capture)
-
+                                      width=args.width,
+                                      height=args.height).start()
     fps = FPS().start()
 
-    while True: # fps._numFrames < 120
+    while True:  # fps._numFrames < 120
         frame = video_capture.read()
         input_q.put(frame)
 

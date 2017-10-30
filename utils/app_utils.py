@@ -41,6 +41,7 @@ class FPS:
 
 class WebcamVideoStream:
     def __init__(self, src, width, height):
+    #def __init__(self, src):
         # initialize the video camera stream and read the first frame
         # from the stream
         self.stream = cv2.VideoCapture(src)
